@@ -1,10 +1,9 @@
-// api/index.js — pdfjs-dist 버전 (서버리스 친화, 크래시 방지)
+// api/index.js — pdfjs-dist 버전
 import express from "express";
 import multer from "multer";
 import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 import serverless from "serverless-http";
-// ✅ pdf-parse 대신 pdfjs-dist 사용 (Node에서는 워커 설정 불필요)
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 
 const app = express();
@@ -19,7 +18,6 @@ const {
   KAKAO_SKILL_SECRET
 } = process.env;
 
-// --- lazy 생성(ENV 누락 시 즉시 크래시 방지) ---
 function getOpenAI() {
   if (!OPENAI_API_KEY) throw new Error("Missing OPENAI_API_KEY");
   return new OpenAI({ apiKey: OPENAI_API_KEY });
@@ -31,10 +29,8 @@ function getSupabase() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 }
 
-// 헬스체크
 app.get("/", (req, res) => res.status(200).send("OK - kakao-rag-bot"));
 
-// 간단 업로드 폼
 app.get("/admin", (req, res) => {
   res.send(`
     <h3>PDF 업로드(관리자)</h3>
@@ -48,7 +44,6 @@ app.get("/admin", (req, res) => {
   `);
 });
 
-// --- PDF → 텍스트 추출 (pdfjs-dist 사용) ---
 async function pdfBufferToText(buffer) {
   const loadingTask = getDocument({ data: buffer });
   const pdf = await loadingTask.promise;
@@ -56,15 +51,11 @@ async function pdfBufferToText(buffer) {
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
-    // item.str들만 모아 한 줄로
     text += content.items.map(it => it.str).join(" ") + "\n";
-    // 서버리스 타임아웃 방지용(아주 큰 PDF는 나눠 업로드 권장)
-    if (text.length > 2_000_000) break; // 2MB 텍스트면 충분
+    if (text.length > 2_000_000) break;
   }
   return text;
 }
-
-// 텍스트 청크
 function chunkText(text, chunkSize = 1200, overlap = 200) {
   const chunks = [];
   let i = 0;
@@ -76,17 +67,11 @@ function chunkText(text, chunkSize = 1200, overlap = 200) {
   }
   return chunks;
 }
-
-// 임베딩
 async function embed(openai, texts) {
-  const r = await openai.embeddings.create({
-    model: "text-embedding-3-large",
-    input: texts
-  });
+  const r = await openai.embeddings.create({ model: "text-embedding-3-large", input: texts });
   return r.data.map(d => d.embedding);
 }
 
-// 업로드 + 인덱싱
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
     const { pw, source = "기타", title = "문서" } = req.body;
@@ -113,7 +98,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// --- 검색/에이전트/QA 저장 (기존 로직 그대로) ---
+// --- 아래 검색/에이전트/답변 생성은 그대로 ---
 async function searchDocs(openai, supabase, query, filterSource = null, topK = 5) {
   const [qEmbed] = await embed(openai, [query]);
   const { data, error } = await supabase.rpc("match_documents", {
@@ -176,10 +161,9 @@ app.post("/kakao", async (req, res) => {
 
     const finalText = await answerWithLLM(openai, userText, bundles);
 
-    // 메모리는 실패해도 서비스 유지
     try {
       const [qEmbed] = await embed(openai, [userText]);
-      await supabase.from("qa_memory").insert({ user_id: userId, question: userText, answer: finalText, embedding: qEmbed });
+      await getSupabase().from("qa_memory").insert({ user_id: userId, question: userText, answer: finalText, embedding: qEmbed });
     } catch (e) { console.warn("qa_memory save warn:", e.message); }
 
     return res.json({
