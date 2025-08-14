@@ -1,5 +1,10 @@
 {
+  "functions": {
+    "api/router.js": { "maxDuration": 10, "memory": 512 },
+    "api/ok.js":     { "maxDuration": 5,  "memory": 128 }
+  },
   "routes": [
-    { "src": "/(.*)", "dest": "/api/router.js" }
+    { "src": "^/$",                      "dest": "/api/ok.js" },
+    { "src": "^/(admin|upload|kakao)$",  "dest": "/api/router.js" }
   ]
 }
