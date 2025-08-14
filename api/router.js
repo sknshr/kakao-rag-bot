@@ -160,6 +160,14 @@ app.post("/kakao", async (req, res) => {
       const token = req.headers["x-skill-secret"];
       if (token !== KAKAO_SKILL_SECRET) return res.status(403).json({ error: "forbidden" });
     }
+
+    // ✅ 추가: fast=1이면 0.1초 내 즉시 응답(오픈빌더 테스트용)
+    if (req.query.fast === "1") {
+      return res.json({
+        version: "2.0",
+        template: { outputs: [{ simpleText: { text: "pong(테스트) — 서버 연결 정상입니다." } }] }
+      });
+    }
     const openai = getOpenAI();
     const supabase = getSupabase();
 
