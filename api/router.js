@@ -49,16 +49,14 @@ app.get("/admin", (_req, res) => {
 
 // PDF → 텍스트(pdfjs-dist 지연 로드)
 async function pdfBufferToText(buffer) {
-  // ✅ 필요할 때만 모듈을 불러옵니다(콜드스타트 가벼워짐)
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs"); // ✅ 필요할 때만 로드
   const pdf = await pdfjs.getDocument({ data: buffer }).promise;
-
   let text = "";
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
     text += content.items.map(it => it.str).join(" ") + "\n";
-    if (text.length > 2_000_000) break; // 매우 큰 PDF 보호
+    if (text.length > 2_000_000) break;
   }
   return text;
 }
