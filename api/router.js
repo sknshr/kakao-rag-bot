@@ -10,7 +10,6 @@ import multer from "multer";
 import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 import serverless from "serverless-http";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 
 const app = express();
 app.use(express.json({ limit: "5mb" }));
@@ -46,9 +45,14 @@ app.get("/admin", (_req, res) => {
   `);
 });
 
-// --- PDF → 텍스트(pdfjs-dist) ---
+// (기존 맨 위 import { getDocument ... } 는 삭제했습니다)
+
+// PDF → 텍스트(pdfjs-dist 지연 로드)
 async function pdfBufferToText(buffer) {
-  const pdf = await getDocument({ data: buffer }).promise;
+  // ✅ 필요할 때만 모듈을 불러옵니다(콜드스타트 가벼워짐)
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const pdf = await pdfjs.getDocument({ data: buffer }).promise;
+
   let text = "";
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
