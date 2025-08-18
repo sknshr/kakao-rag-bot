@@ -1,14 +1,14 @@
 {
   "functions": {
-    "api/ok.js":     { "maxDuration": 5,  "memory": 128 },
-    "api/admin.js":  { "maxDuration": 5,  "memory": 128 },
+    "api/ok.js": { "maxDuration": 5, "memory": 128 },
+    "api/admin.js": { "maxDuration": 5, "memory": 128 },
     "api/router.js": { "maxDuration": 10, "memory": 1024 },
-    "api/ping.js":   { "maxDuration": 5,  "memory": 128 }
+    "api/ping.js": { "maxDuration": 5, "memory": 128 }
   },
   "routes": [
-    { "src": "^/$",                       "dest": "/api/ok.js" },
-    { "src": "^/__ping$",                 "dest": "/api/ping.js" },   // ✅ 새로 추가
-    { "src": "^/admin$",                  "dest": "/api/admin.js" },
+    { "src": "^/$", "dest": "/api/ok.js" },
+    { "src": "^/__ping$", "dest": "/api/ping.js" },
+    { "src": "^/admin$", "dest": "/api/admin.js" },
     { "src": "^/(upload|kakao)(?:/.*)?$", "dest": "/api/router.js" }
   ]
 }
