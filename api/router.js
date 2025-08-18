@@ -17,9 +17,13 @@ import serverless from "serverless-http";
 // --------------------------------------------------------------------------------------
 const app = express();
 
-// JSON 파서: 일부 클라이언트가 Content-Type을 정확히 안 주는 경우를 대비해 type="*/*"
-app.use(express.json({ limit: "5mb", type: "*/*" }));
+app.use((req, res, next) => {
+  console.log("[IN]", req.method, req.url, "q=", req.query);
+  next();
+});
 
+// JSON 파서: 일부 클라이언트가 Content-Type을 정확히 안 주는 경우를 대비해 type="*/*"
+app.use(express.json({ limit: "5mb" }));
 // 파일 업로드: 서버리스는 디스크가 없으므로 메모리 저장 권장
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -198,10 +202,9 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 // 카카오 스킬 웹훅 (GET/POST 모두 허용 + fast 테스트 + 헤더/쿼리 시크릿)
 const kakaoHandler = async (req, res) => {
   try {
-    // ✅ [디버그용] query에 fast가 있으면 무조건 초고속 응답 (시크릿도 건너뜀)
-    //    => fast 분기까지 들어오는지부터 먼저 확인
+    // fast 쿼리 있으면 시크릿도 건너뛰고 즉시 응답
     if (typeof req.query.fast !== "undefined") {
-      console.log("DEBUG /kakao fast hit", req.method, req.query);
+      console.log("HIT /kakao?fast", req.method, req.query);
       return res.json({
         version: "2.0",
         template: { outputs: [ { simpleText: { text: "pong(fast-debug)" } } ] }
@@ -277,6 +280,7 @@ const kakaoHandler = async (req, res) => {
   }
 };
 app.get("/kakao/ping", (req, res) => {
+  console.log("HIT /kakao/ping");
   res.json({
     version: "2.0",
     template: { outputs: [ { simpleText: { text: "pong" } } ] }
@@ -285,7 +289,6 @@ app.get("/kakao/ping", (req, res) => {
 // GET/POST 모두 허용 (오픈빌더 테스트가 GET일 때 대비)
 app.post("/kakao", kakaoHandler);
 app.get("/kakao", kakaoHandler);
-
 // --------------------------------------------------------------------------------------
 // 4) Vercel 서버리스 내보내기
 // --------------------------------------------------------------------------------------
