@@ -198,6 +198,15 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 // 카카오 스킬 웹훅 (GET/POST 모두 허용 + fast 테스트 + 헤더/쿼리 시크릿)
 const kakaoHandler = async (req, res) => {
   try {
+    // ✅ [디버그용] query에 fast가 있으면 무조건 초고속 응답 (시크릿도 건너뜀)
+    //    => fast 분기까지 들어오는지부터 먼저 확인
+    if (typeof req.query.fast !== "undefined") {
+      console.log("DEBUG /kakao fast hit", req.method, req.query);
+      return res.json({
+        version: "2.0",
+        template: { outputs: [ { simpleText: { text: "pong(fast-debug)" } } ] }
+      });
+    }
     // 1) 시크릿 검증: 헤더(x-skill-secret) 또는 쿼리(?secret=)
     if (KAKAO_SKILL_SECRET) {
       const token = req.headers["x-skill-secret"] || req.query.secret;
@@ -267,7 +276,12 @@ const kakaoHandler = async (req, res) => {
     });
   }
 };
-
+app.get("/kakao/ping", (req, res) => {
+  res.json({
+    version: "2.0",
+    template: { outputs: [ { simpleText: { text: "pong" } } ] }
+  });
+});
 // GET/POST 모두 허용 (오픈빌더 테스트가 GET일 때 대비)
 app.post("/kakao", kakaoHandler);
 app.get("/kakao", kakaoHandler);
