@@ -1,27 +1,17 @@
 {
   "name": "kakao-rag-bot",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node api/router.js",
-    "start": "node api/router.js"
+    "start": "node api/router.js",
+    "build": "echo \"no build step\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
-    "express": "^4.19.2",
-    "multer": "^1.4.5-lts.1",
-    "node-fetch": "^3.3.2",
+    "busboy": "^1.6.0",
     "openai": "^4.54.0",
-    "serverless-http": "^3.2.0",
     "pdfjs-dist": "^4.4.0"
   }
-{
-  "type": "module",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.45.0",
-    "openai": "^4.54.0",
-    "pdfjs-dist": "^4.4.0",
-    "busboy": "^1.6.0"
-  }
-}
 }
