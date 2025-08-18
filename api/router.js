@@ -280,12 +280,17 @@ const kakaoHandler = async (req, res) => {
   }
 };
 app.get("/kakao/ping", (req, res) => {
-  console.log("HIT /kakao/ping");
-  res.json({
-    version: "2.0",
-    template: { outputs: [ { simpleText: { text: "pong" } } ] }
-  });
+  res.json({ version: "2.0", template: { outputs: [ { simpleText: { text: "pong" } } ] } });
 });
+
+app.get("/kakao", (req, res) => {
+  res.json({ version: "2.0", template: { outputs: [ { simpleText: { text: "ok get /kakao" } } ] } });
+});
+
+app.post("/kakao", (req, res) => {
+  res.json({ version: "2.0", template: { outputs: [ { simpleText: { text: "ok post /kakao" } } ] } });
+});
+
 // GET/POST 모두 허용 (오픈빌더 테스트가 GET일 때 대비)
 app.post("/kakao", kakaoHandler);
 app.get("/kakao", kakaoHandler);
