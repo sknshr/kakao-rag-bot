@@ -5,8 +5,8 @@
     "api/router.js": { "maxDuration": 10, "memory": 1024 }
   },
   "routes": [
-    { "src": "^/$",                     "dest": "/api/ok.js" },
-    { "src": "^/admin$",                "dest": "/api/admin.js" },
-    { "src": "^/(upload|kakao)$",       "dest": "/api/router.js" }
+    { "src": "^/$",                    "dest": "/api/ok.js" },
+    { "src": "^/admin$",               "dest": "/api/admin.js" },
+    { "src": "^/(upload|kakao)(?:/.*)?$", "dest": "/api/router.js" }
   ]
 }
