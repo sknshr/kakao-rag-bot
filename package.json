@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node api/router.js",
-    "start": "node api/router.js",
-    "build": "echo \"no build step\""
+    "start": "node api/router.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
