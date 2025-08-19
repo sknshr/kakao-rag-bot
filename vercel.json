@@ -1,14 +1,13 @@
 {
   "functions": {
-    "api/ok.js": { "maxDuration": 5, "memory": 128 },
-    "api/admin.js": { "maxDuration": 5, "memory": 128 },
-    "api/router.js": { "maxDuration": 10, "memory": 1024 },
-    "api/ping.js": { "maxDuration": 5, "memory": 128 }
+    "api/*.js": {
+      "runtime": "nodejs22.x"
+    }
   },
+  "builds": [
+    { "src": "api/router.js", "use": "@vercel/node" }
+  ],
   "routes": [
-    { "src": "^/$", "dest": "/api/ok.js" },
-    { "src": "^/__ping$", "dest": "/api/ping.js" },
-    { "src": "^/admin$", "dest": "/api/admin.js" },
-    { "src": "^/(upload|kakao)(?:/.*)?$", "dest": "/api/router.js" }
+    { "src": "/(.*)", "dest": "api/router.js" }
   ]
 }
